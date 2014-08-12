@@ -147,6 +147,18 @@ a.button:hover {
   text-decoration: none;
 }
 
+button.destroy {
+  color: color(#013545 tint(70%));
+  background-color: transparent;
+  border: 0px;
+}
+
+button.destroy:hover {
+  color: #013545;
+  background-color: #efefea;
+  border: 0px;
+}
+
 #table-editor {
   margin-top: 30px;
 }
@@ -154,12 +166,15 @@ a.button:hover {
 #table-editor thead th {
   text-align: left;
   padding-top: 10px;
-  padding-left: 10px;
 }
 
-#table-editor thead th span.header-name {
-  padding-top: 5px;
+#table-editor thead th span.column-name {
   display: inline-block;
+}
+
+#table-editor thead th span.column-name input {
+  border: 0px;
+  width: 114px;
 }
 
 #table-editor textarea {
@@ -169,6 +184,10 @@ a.button:hover {
   padding: 0px 0px 0px 5px;
   border: 1px solid #ccc;
   width: 150px;
+}
+
+#main-content {
+  margin-left: -32px;
 }
 
 #code-box {

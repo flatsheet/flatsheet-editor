@@ -2,20 +2,20 @@ var fs = require('fs');
 var TableEditor = require('table-editor');
 var prettify = require('jsonpretty');
 var elClass = require('element-class');
-var domready = require('domready');
 var levelup = require('levelup');
 var leveljs = require('level-js');
-var on = require('dom-event');
-var remove = require('remove-element');
-var closest = require('discore-closest');
-
-var menuToggle = require('./lib/menu-toggle');
+var on = require('component-delegate').bind;
+var closest = require('component-closest');
+var toCSV = require('json-2-csv').json2csv;
 
 /* get the table template */
-var tableTemplate = fs.readFileSync('./templates/table.html', 'utf8');
+var template = fs.readFileSync('./templates/table.html', 'utf8');
 
 /* create the table editor */
-window.editor = new TableEditor('main-content', { headers: [], rows: [] }, tableTemplate);
+window.editor = new TableEditor({
+  el: 'main-content',
+  template: template
+});
 
 /* get the help message */
 var hello = document.getElementById('hello-message');
@@ -25,117 +25,106 @@ window.db = levelup('sheet', { db: leveljs, valueEncoding: 'json' });
 
 /* check to see if the sheet has has been added to the db already */
 db.get('sheet', function (err, value) {
-  if (err) return console.error(err);
-  if (value.headers.length > 0) {
+  if (err && err.type === "NotFoundError") editor.clear();
+  else if (value.columns && value.columns.length > 0) {
+    console.log('db has value')
     elClass(hello).add('hidden');
     editor.set(value);
   }
+  else editor.clear();
 });
 
 /* listen for changes to the data and save the object to the db */
 editor.on('change', function (change, data) {
-  db.put('sheet', data, function (error) {
+  db.put('sheet', editor.data, function (error) {
     if (error) console.error(error);
+    console.log('in editor.on change', change)
   });
 });
 
-/* button element and listener for adding a row */
-var addRow = document.getElementById('add-row');
-
-on(addRow, 'click', function (e) {
+/* listener for adding a row */
+on(document.body, '#add-row', 'click', function (e) {
   editor.addRow();
 });
 
-/* button element and listener for adding a column */
-var addColumn = document.getElementById('add-column');
-
-on(addColumn, 'click', function (e) {
-  if (editor.data.headers.length < 1) elClass(hello).add('hidden');
-  if (editor.data.rows < 1) editor.addRow();
+/* listener for adding a column */
+on(document.body, '#add-column', 'click', function (e) {
+  if (editor.get('columns')) elClass(hello).add('hidden');
   var name = window.prompt('New column name');
-  editor.addColumn({ name: name, type: 'string' });
+  if (name) editor.addColumn({ name: name, type: 'string' });
 });
 
 /* get elements for codebox and its textarea */
 var codeBox = document.getElementById('code-box');
 var textarea = codeBox.querySelector('textarea');
 
-/* button element and listener for showing the data as json */
-var showJSON = document.getElementById('show-json');
+/* listener for showing the data as json */
+on(document.body, '#show-json', 'click', function (e) {
+  textarea.value = prettify(editor.getRows());
+  elClass(codeBox).remove('hidden');
+});
 
-on(showJSON, 'click', function (e) {
-  editor.getJSON(function (data) {
-    textarea.value = prettify(data);
+/* listener for showing the data as csv */
+on(document.body, '#show-csv', 'click', function (e) {
+  toCSV(editor.getRows(), function (err, csv) {
+    textarea.value = csv;
     elClass(codeBox).remove('hidden');
   });
 });
 
-/* button element and listener for showing the data as csv */
-var showCSV = document.getElementById('show-csv');
-
-on(showCSV, 'click', function (e) {
-  editor.getCSV(function (data) {
-    textarea.value = data;
-    elClass(codeBox).remove('hidden');
-  });
-});
-
-/* button element and listener for closing the codebox */
-var close = document.getElementById('close');
-
-on(close, 'click', function (e) {
+/* listener for closing the codebox */
+on(document.body, '#close', 'click', function (e) {
   textarea.value = '';
   elClass(codeBox).add('hidden');
 });
 
-/* button element and listener for clearing the db */
-var reset = document.getElementById('reset');
-
-on(reset, 'click', function (e) {
+/* listener for clearing the db */
+on(document.body, '#reset', 'click', function (e) {
   var msg = 'Are you sure you want to reset this project? You will start over with an empty workspace.';
   if (window.confirm(msg)) {
-    editor.reset();
-    elClass(hello).remove('hidden');   
+    editor.clear();
+    elClass(hello).remove('hidden');
   };
 });
 
-/* element and listener for the table header */
-var tableHeader = document.getElementById('table-header');
-
-on(tableHeader, 'click', function (e) {
-  if (elClass(e.target).has('setting')) {
-    var btn = e.target.id.split('-');
-
-    if (btn[0] === 'delete') {
-      if (window.confirm('Sure you want to delete this column and its contents?')) {
-        editor.deleteColumn(btn[1]);
-      }
-    }
-
-    if (btn[0] === 'rename') {
-      var newName = window.prompt('Choose a new column name:')
-      if (newName) editor.renameColumn(btn[1], newName);
-    }
+/* listener for the delete column button */
+on(document.body, 'thead .destroy', 'click', function (e) {
+  var id;
+  if (elClass(e.target).has('destroy')) id = e.target.id;
+  else if (elClass(e.target).has('destroy-icon')) id = closest(e.target, '.destroy').id;
+  console.log(id)
+  if (window.confirm('Sure you want to delete this column and its contents?')) {
+    editor.destroyColumn(id);
   }
-
-  else menuToggle('header', e.target)
 });
 
-/* element and listener for the table body */
-var tableBody = document.getElementById('table-body');
-
-on(tableBody, 'click', function (e) {
+on(document.body, '.delete-row', 'click', function (e) {
   var btn;
 
   if (elClass(e.target).has('delete-row')) btn = e.target;
-  else if (elClass(e.target).has('delete-btn-icon')) btn = closest(e.target, '.delete-row');
-  else return;
-  
-  console.log(btn);
+  else if (elClass(e.target).has('destroy-icon')) btn = closest(e.target, '.delete-row');
+  var row = closest(btn, 'tr');
 
   if (window.confirm('Sure you want to delete this row and its contents?')) {
-    var row = closest(btn, 'tr');
-    console.log(row.className, row, btn)
-    editor.deleteRow(row.className);
+    editor.destroyRow(row.className);
   }
+});
+
+
+/* listener for the table body */
+on(document.body, '#table-body', 'click', function (e) {
+  var btn;
+
+  if (e.target.tagName === 'TEXTAREA') {
+    var cellEl = document.getElementById(closest(e.target, 'td').id);
+
+    var id = closest(e.target, 'td').id;
+
+    e.target.onblur = function (e) {
+    }
+
+    return;
+  }
+
+
 });

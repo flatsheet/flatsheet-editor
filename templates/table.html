@@ -1,23 +1,19 @@
 <table id="table-editor">
-  <thead id="table-header">
+  <thead id="table-column">
     <tr>
       <span class="spacer"></span>
-      {{#headers:key}}
-        <th id={{name}}>
-          <span class="header-name">{{name}}</span>
-          <button class="header-settings-toggle"><i class="fa fa-gear settings-icon"></i></button>
-          <ul class="header-settings hidden">
-            <li><button id="rename-{{name}}" class="setting"><i class="fa fa-edit"></i> Rename</button></li>
-            <li><button id="delete-{{name}}" class="setting"><i class="fa fa-trash-o"></i> Delete</button></li>
-          </ul>
+      {{#columns:key}}
+        <th id={{id}}>
+          <span class="column-name"><input value="{{name}}"></span>
+          <button id="{{id}}" class="destroy"><i class="fa fa-trash-o destroy-icon"></i></button>
         </th>
-      {{/headers}}
+      {{/columns}}
     </tr>
   </thead>
   <tbody id="table-body">
     {{#rows:i}}
-    <tr class="{{ i }}">
-      <button class="delete-row"><i class="fa fa-trash-o delete-btn-icon"></i></button>
+    <tr class="{{ id }}">
+      <button class="delete-row destroy"><i class="fa fa-trash-o destroy-icon"></i></button>
       {{#this:value}}
       <td class="{{value}}">
         <textarea value="{{this}}"></textarea>
