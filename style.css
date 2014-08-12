@@ -163,6 +163,10 @@ button.destroy:hover {
   border: 0px;
 }
 
+a.button i.fa {
+  line-height: 30px;
+}
+
 #about {
   height: 30px;
   line-height: 30px;
@@ -171,7 +175,7 @@ button.destroy:hover {
 
 .about .container {
   max-width: 600px;
-  margin: 0px auto;
+  margin: 30px auto;
 }
 
 .about p {
