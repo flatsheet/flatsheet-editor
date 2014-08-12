@@ -99,13 +99,13 @@ on(document.body, 'thead .destroy', 'click', function (e) {
 
 on(document.body, '.delete-row', 'click', function (e) {
   var btn;
-
+  console.log('waaaaa')
   if (elClass(e.target).has('delete-row')) btn = e.target;
   else if (elClass(e.target).has('destroy-icon')) btn = closest(e.target, '.delete-row');
   var row = closest(btn, 'tr');
-
+  console.log(row.id, row)
   if (window.confirm('Sure you want to delete this row and its contents?')) {
-    editor.destroyRow(row.className);
+    editor.destroyRow(row.id);
   }
 });
 

@@ -10,7 +10,7 @@ var closest = require('component-closest');
 var toCSV = require('json-2-csv').json2csv;
 
 /* get the table template */
-var template = "<table id=\"table-editor\">\n  <thead id=\"table-column\">\n    <tr>\n      <span class=\"spacer\"></span>\n      {{#columns:key}}\n        <th id={{id}}>\n          <span class=\"column-name\"><input value=\"{{name}}\"></span>\n          <button id=\"{{id}}\" class=\"destroy\"><i class=\"fa fa-trash-o destroy-icon\"></i></button>\n        </th>\n      {{/columns}}\n    </tr>\n  </thead>\n  <tbody id=\"table-body\">\n    {{#rows:i}}\n    <tr class=\"{{ id }}\">\n      <button class=\"delete-row destroy\"><i class=\"fa fa-trash-o destroy-icon\"></i></button>\n      {{#this:value}}\n      <td class=\"{{value}}\">\n        <textarea value=\"{{this}}\"></textarea>\n      </td>\n      {{/.}}\n    </tr>\n    {{/rows}}\n  </tbody>\n</table>\n";
+var template = "<table id=\"table-editor\">\n  <thead id=\"table-column\">\n    <tr>\n      <span class=\"spacer\"></span>\n      {{#columns:key}}\n        <th id={{id}}>\n          <span class=\"column-name\"><input value=\"{{name}}\"></span>\n          <button id=\"{{id}}\" class=\"destroy\"><i class=\"fa fa-trash-o destroy-icon\"></i></button>\n        </th>\n      {{/columns}}\n    </tr>\n  </thead>\n  <tbody id=\"table-body\">\n    {{#rows:i}}\n    <tr id=\"{{ i }}\">\n      <button class=\"delete-row destroy\"><i class=\"fa fa-trash-o destroy-icon\"></i></button>\n      {{#this:value}}\n      <td class=\"{{value}}\">\n        <textarea value=\"{{this}}\"></textarea>\n      </td>\n      {{/.}}\n    </tr>\n    {{/rows}}\n  </tbody>\n</table>\n";
 
 /* create the table editor */
 window.editor = new TableEditor({
@@ -100,13 +100,13 @@ on(document.body, 'thead .destroy', 'click', function (e) {
 
 on(document.body, '.delete-row', 'click', function (e) {
   var btn;
-
+  console.log('waaaaa')
   if (elClass(e.target).has('delete-row')) btn = e.target;
   else if (elClass(e.target).has('destroy-icon')) btn = closest(e.target, '.delete-row');
   var row = closest(btn, 'tr');
-
+  console.log(row.id, row)
   if (window.confirm('Sure you want to delete this row and its contents?')) {
-    editor.destroyRow(row.className);
+    editor.destroyRow(row.id);
   }
 });
 
