@@ -28,7 +28,6 @@ window.db = levelup('sheet', { db: leveljs, valueEncoding: 'json' });
 db.get('sheet', function (err, value) {
   if (err && err.type === "NotFoundError") editor.clear();
   else if (value.columns && value.columns.length > 0) {
-    console.log('db has value')
     elClass(hello).add('hidden');
     editor.set(value);
   }
@@ -39,7 +38,6 @@ db.get('sheet', function (err, value) {
 editor.on('change', function (change, data) {
   db.put('sheet', editor.data, function (error) {
     if (error) console.error(error);
-    console.log('in editor.on change', change)
   });
 });
 
@@ -91,9 +89,10 @@ on(document.body, '#reset', 'click', function (e) {
 /* listener for the delete column button */
 on(document.body, 'thead .destroy', 'click', function (e) {
   var id;
+
   if (elClass(e.target).has('destroy')) id = e.target.id;
   else if (elClass(e.target).has('destroy-icon')) id = closest(e.target, '.destroy').id;
-  console.log(id)
+
   if (window.confirm('Sure you want to delete this column and its contents?')) {
     editor.destroyColumn(id);
   }
