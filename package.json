@@ -1,11 +1,17 @@
 {
   "name": "flatsheet-editor",
-  "description": "a multi-user, realtime editor for tabular data",
+  "description": "an editor for tabular data",
   "version": "0.0.0",
   "repository": {
-    "url": "git://github.com/flatsheet/editor.git"
+    "url": "git://github.com/flatsheet/flatsheet-editor.git"
   },
   "main": "index.js",
+  "browser": "index.js",
+  "browserify": {
+    "transform": [
+      "brfs"
+    ]
+  },
   "scripts": {
     "test": "tape test.js",
     "bundle-css": "rework-npm style.css | myth | cleancss -o bundle/app.css",
@@ -17,14 +23,18 @@
     "start": "serve & npm run watch"
   },
   "dependencies": {
+    "closest": "0.0.1",
     "component-closest": "^0.1.4",
+    "domify": "^1.3.1",
+    "domquery": "^1.2.0",
     "element-class": "^0.1.1",
     "json-2-csv": "^0.1.3",
     "jsonpretty": "0.0.1",
     "level-js": "^2.1.6",
     "levelup": "^0.18.5",
     "normalize-css": "^2.3.1",
-    "table-editor": "^0.4.3"
+    "siblings": "^1.0.1",
+    "table-editor": "^1.0.1"
   },
   "devDependencies": {
     "brfs": "^1.1.1",
