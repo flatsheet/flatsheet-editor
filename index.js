@@ -9,21 +9,9 @@ var request = require('xhr');
 var domify = require('domify');
 var dom = require('domquery');
 var siblings = require('siblings');
+var Emitter = require('component-emitter');
 
 module.exports = Editor;
-
-
-/*
-
-All options with default values:
-
-var options = {
-  socketio: false,
-  
-};
-
-*/
-
 
 function Editor (data, opts) {
   if (!(this instanceof Editor)) return new Editor(data, opts);
@@ -49,9 +37,11 @@ function Editor (data, opts) {
   
   /* listen for changes to the data and save the object to the db */
   this.editor.on('change', function (change) {
-    if (self.remoteChange) return;
-    if (self.editor.data.rows) var rows = self.editor.getRows();
-    if (!sorting && this.socketio) this.io.emit('change', change, rows);
+    if (this.socketio) {
+      if (self.remoteChange) return;
+      if (self.editor.data.rows) var rows = self.editor.getRows();
+      if (!sorting) this.io.emit('change', change, rows);
+    }
   });
   
   var sorting;
@@ -221,8 +211,8 @@ Editor.prototype.startDownload = function (name, ext, content, type) {
 
 
 Editor.prototype.addColumn = function () {
-  var name = window.prompt('New column name');
-  if (name) this.editor.addColumn({ name: name, type: 'string' });
+  var i = this.editor.get('columns').length + 1;
+  this.editor.addColumn({ name: 'column' + i, type: 'string' });
 };
 
 
@@ -242,6 +232,18 @@ Editor.prototype.destroyColumn = function (target) {
 Editor.prototype.addRow = function () {
   this.editor.addRow();
 };
+
+Editor.prototype.getRow = function (i) {
+  var columns = this.editor.get('columns');
+  var data = this.editor.get('rows.' + i);
+  var out = {};
+
+  columns.forEach(function (column, i) {
+    out[column.name] = data[column.id];
+  });
+  
+  return out;
+}
 
 
 Editor.prototype.destroyRow = function (target) {
